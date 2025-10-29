@@ -1,69 +1,82 @@
-import typing as tg
+from typing import Callable
 import time
 from utilities import Winning, GameUtilities, UserInteraction
 import board_module
 from algorithm_module import Algorithms
 
+class GameModes:
+
+    @staticmethod
+    def function_0(starter: str, root, selected_mode) -> None:
+        #Standard Mode
+        if starter == "User":
+            GameUtilities.clear_screen()
+            print(root)
+            UserInteraction.get_user_input(prompt="Enter your choice: ", root=root)
+        while True:
+            if Winning.win_check_and_handler(root=root):
+                break
+            GameUtilities.clear_screen()
+            selected_mode(root=root)
+            if Winning.win_check_and_handler(root=root):
+                break
+            time.sleep(0.25)
+            print(root)
+            time.sleep(0.25)
+            UserInteraction.get_user_input(prompt="Enter your choice: ", root=root)
+            if Winning.win_check_and_handler(root=root):
+                break
+
+            GameUtilities.clear_screen()
+
+    @staticmethod
+    def function_1(starter: str, root, selected_mode) -> None:
+        #Versus mode
+        exit(f"\033[31m{"INCOMPLETE FUNCTION"}\033[0m")
+
+    @staticmethod
+    def function_2(starter: str, root, selected_mode) -> None:
+        #Cpu mode
+        exit(f"\033[31m{"INCOMPLETE FUNCTION!"}\033[0m")
+
 #Main function
 def main() -> None:
-    #TODO add selection of game length
-    #TODO add possibility to choose the sign of cpu and player
-    #TODO add challenge mode with time, score and name logging
+    #Clears screen for nice view
+    GameUtilities.clear_screen()
 
-    modes: dict[str, tg.Callable] = {"1":Algorithms.easy_mode, "2":Algorithms.medium_mode, "3":Algorithms.hard_mode, "-1":Algorithms.impossible_mode, "0":Algorithms.noob_mode}
-    selected_mode: None = None
+    #TODO add selection of game length!
+    #TODO add challenge mode with time, score and name logging!
+    #TODO add ability to choose the color of the signs!
+    #TODO add advanced customization option.
+    #TODO fix color by adding them at the beginning, because using colored characters to modify the board will make then not be recognised anymore!
+
+    #Gets the game mode of the match
+    game_mode, starters = UserInteraction.get_game_mode(GameModes)
+
+    #This player will start
+    first_in_line = UserInteraction.who_starts(starters=starters)
+
     GameUtilities.welcome_screen()
 
-    while True:
-        difficulty: str = input("Enter difficulty (1,2,3): ").strip()
-        if difficulty not in modes.keys():
-            print("\nInvalid difficulty")
-            time.sleep(0.5)
-            GameUtilities.clear_screen()
-            continue
-        selected_mode: tg.Callable = modes[difficulty]
-        break
+    sign_1, sign_2 = UserInteraction.game_signs(players=starters)
+
+    selected_mode: Callable = UserInteraction.get_difficulty(Algorithms)
 
     GameUtilities.clear_screen()
 
-    if selected_mode != Algorithms.impossible_mode:
-        starter: str = GameUtilities.choose_starter()
-        print(f"The selected mode is {selected_mode.__name__} and the {starter} will start with \"X\"!")
+    root = board_module.Board(sign_1=sign_1, sign_2=sign_2)
 
-        user_sign: str = "X" if starter == "User" else "M"
-        computer_sign: str = "X" if starter == "Computer" else "M"
-
-        time.sleep(3)
-        GameUtilities.clear_screen()
+    if selected_mode is Algorithms.function_4:
+        first_in_line = "Computer"
+        print("You have dared to select the secret impossible mode! Prepare to suffer!")
     else:
-        starter: str = "Computer"
-        print("U have dared to select the secret impossible mode! Prepare to suffer!")
-        user_sign: str = "M"
-        computer_sign: str = "X"
-        time.sleep(3)
-        GameUtilities.clear_screen()
+        #TODO fix selected_mode.__name__
+        print(f"The selected mode is {selected_mode.__name__} and the {first_in_line} will start with '{root.get_sign(first_in_line)}'!")
 
-    root = board_module.Board(user_sign=user_sign, computer_sign=computer_sign)
+    time.sleep(3)
+    GameUtilities.clear_screen()
 
-    if starter == "User":
-        GameUtilities.clear_screen()
-        root.print_board()
-        UserInteraction.get_user_input(prompt="Enter your choice: ", root=root)
-    while True:
-        if Winning.win_check_and_handler(root=root):
-            break
-        GameUtilities.clear_screen()
-        selected_mode(root=root)
-        if Winning.win_check_and_handler(root=root):
-            break
-        time.sleep(0.25)
-        root.print_board()
-        time.sleep(0.25)
-        UserInteraction.get_user_input(prompt="Enter your choice: ", root=root)
-        if Winning.win_check_and_handler(root=root):
-            break
-
-        GameUtilities.clear_screen()
+    game_mode(starter=first_in_line, root=root, selected_mode=selected_mode)
 
 if __name__ == "__main__":
     main()
